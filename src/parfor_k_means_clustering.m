@@ -1,24 +1,18 @@
-function [labels centroids] = parfor_k_means_clustering(data_x, cluster_K)
+function time = parfor_k_means_clustering(data_x, cluster_K, centroids)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
+tic;
 data_x=double(data_x);
-[data_height data_width]=size(data_x);
-
-centroids=zeros(data_height,cluster_K);
-
-for n=1:cluster_K
-    for m=1:data_height
-        centroids(m,n)=data_x(m,randi(data_width));
-    end
-end
+[~, data_width]=size(data_x);
 
 convergence_diff=norm(centroids);
 new_centroids=zeros(size(centroids));
 
 while(convergence_diff)
     dists=zeros(cluster_K, data_width);
-    parfor n=1:cluster_K
-        dists(n,:)=sum((data_x-repmat(centroids(:,n),1,data_width)).^2).^0.5;
+    parfor n=1:data_width
+        dists(:,n)=distance_calculation(centroids,data_x(:,n));
+        %dists(:,n)=(sum((repmat(data_x(:,n),1,cluster_K)-centroids).^2).^0.5)';%sum((data_x-repmat(centroids(:,n),1,data_width)).^2).^0.5;
     end
     %now dist is a cluster_k by data_width matrix
     [~, labels]=min(dists);
@@ -34,5 +28,5 @@ while(convergence_diff)
     convergence_diff=norm(new_centroids-centroids);
     centroids=new_centroids;
 end
-
+time=toc;
 end
